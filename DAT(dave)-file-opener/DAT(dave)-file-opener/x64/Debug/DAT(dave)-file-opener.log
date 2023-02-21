@@ -1,0 +1,10 @@
+﻿  DAT(dave)-file-opener.cpp
+C:\Users\paulo\source\repos\DAT(dave)-file-opener\DAT(dave)-file-opener\DAT(dave)-file-opener.cpp(68,1): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\paulo\source\repos\DAT(dave)-file-opener\DAT(dave)-file-opener\DAT(dave)-file-opener.cpp(80,1): warning C4267: '=': conversion from 'size_t' to 'unsigned char', possible loss of data
+C:\Users\paulo\source\repos\DAT(dave)-file-opener\DAT(dave)-file-opener\DAT(dave)-file-opener.cpp(97,1): warning C4267: '=': conversion from 'size_t' to 'unsigned char', possible loss of data
+C:\Users\paulo\source\repos\DAT(dave)-file-opener\DAT(dave)-file-opener\DAT(dave)-file-opener.cpp(154,21): warning C4018: '<': signed/unsigned mismatch
+C:\Users\paulo\source\repos\DAT(dave)-file-opener\DAT(dave)-file-opener\DAT(dave)-file-opener.cpp(164,21): warning C4018: '<': signed/unsigned mismatch
+C:\Users\paulo\source\repos\DAT(dave)-file-opener\DAT(dave)-file-opener\DAT(dave)-file-opener.cpp(206,20): warning C4129: 'P': unrecognized character escape sequence
+C:\Users\paulo\source\repos\DAT(dave)-file-opener\DAT(dave)-file-opener\DAT(dave)-file-opener.cpp(206,20): warning C4129: 'M': unrecognized character escape sequence
+C:\Users\paulo\source\repos\DAT(dave)-file-opener\DAT(dave)-file-opener\DAT(dave)-file-opener.cpp(206,20): warning C4129: 'A': unrecognized character escape sequence
+  DAT(dave)-file-opener.vcxproj -> C:\Users\paulo\source\repos\DAT(dave)-file-opener\x64\Debug\DAT(dave)-file-opener.exe
