@@ -5,6 +5,7 @@
 #include <vector>
 #include <cstddef>
 #include <string>
+#include <tuple>
 
 struct DAT_header {
 	char fileID[4];
@@ -32,6 +33,7 @@ struct DAT_file {
 	DAT_fileHeader fileHeader;
 	std::string filenameDir;
 	DAT_fileData fileData;
+	std::string decrFilenames;
 };
 
 struct DAT_directory {
@@ -48,62 +50,73 @@ class Utilities
 public:
 
 
-	static inline bool is_base64(unsigned char c) {
-		return (isalnum(c) || (c == '+') || (c == '/'));
-	}
-
-
 	std::string convertToString(char* a, int size)
 	{
 		std::string s = "";
+
 		for (int i = 0; i < size; i++) {
 			s = s + a[i];
 		}
 		return s;
 	}
 
-	std::vector<unsigned char> decode(std::string const& encoded_string) {
+	std::string convertToString(char a)
+	{
+		std::string s = "";
+		s = a;
+
+		return s;
+	}
+
+	std::tuple<std::string, bool> decode(std::string const& encoded_string) {
 		std::string filenameEncoding{ "+ #$()-./?0123456789_abcdefghijklmnopqrstuvwxyz~" };
 
-		int in_len = encoded_string.size();
+		int stringLength = encoded_string.size();
 		int in_ = 0;
 		int j;
 		int i = j = 0;
 
-		unsigned char char_array_3[3], char_array_4[4];
-		std::vector<unsigned char> ret;
+		unsigned char char_array_4[4];
+		uint8_t int_array_5[4];
+		std::string ret;
+		int firstChar = encoded_string.at(0);
+		int secondChar = encoded_string.at(1);
+		auto index = (firstChar & 0x7) | ((firstChar & 0xC0) >> 3) | ((secondChar & 0x7) << 5);
+		int count = 0;
+		bool InsideFolder = false;
 
-		while (in_len-- && (encoded_string[in_] != '+')) {
-			char_array_4[i++] = encoded_string[in_]; in_++;
-			if (i == 4) {
-				for (i = 0; i < 4; i++)
-					char_array_4[i] = filenameEncoding.find(char_array_4[i]);
+		while (stringLength != 0) {
+			stringLength--; count++;
+			char_array_4[i] = encoded_string[in_]; in_++, i++;
+			if (i == 3 || stringLength < 2) {
+				int_array_5[0] = (char_array_4[0] & 0x3f);
+				int_array_5[1] = (char_array_4[0] >> 6) | ((char_array_4[1] & 0xf) << 2);
+				int_array_5[2] = (char_array_4[1] >> 4) | ((char_array_4[2] & 0x3) << 4);
+				int_array_5[3] = (char_array_4[2] >> 2);
 
-				char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
-				char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
-				char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+				if (stringLength < 1)
+				{
+					for (i = 3; i > (stringLength); i--)
+						int_array_5[i] = 0;
+				}
 
-				for ( i = 0; (i < 3); i++)
-					ret.push_back(char_array_3[i]);
+				if ((encoded_string.at(0) & 0x3f) > 0x38 && count < 4)
+				{
+					for (i = 0; i < 2; i++)
+						int_array_5[i] = 0;
+					InsideFolder = true;
+				}
+
+				for (i = 0; (i < 4); i++)
+				{
+					if (int_array_5[i] != 0)
+						ret.append(convertToString(filenameEncoding.at(int_array_5[i])));
+				}
 				i = 0;
 			}
 		}
 
-		if (i) {
-			for ( j = i; j < 4; j++)
-				char_array_4[j] = 0;
-
-			for (j = 0; j < 4; j++)
-				char_array_4[j] = filenameEncoding.find(char_array_4[j]);
-
-			char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
-			char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
-			char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
-
-			for (j = 0; (j < i - 1); j++) ret.push_back(char_array_3[j]);
-		}
-
-		return ret;
+		return  std::make_tuple(ret, InsideFolder);
 	}
 };
 
@@ -161,24 +174,34 @@ public:
 
 		//goes to the filename offset and starts reading it
 		ifs.seekg(filenameDirOffset, std::ios::beg);
+		std::string folderName = "";
 		for (int i = 0; i < header.numofFiles; i++)
 		{
+			std::string filename;
+			bool isInsideFolder;
+
+
 			ifs.seekg((filenameDirOffset + directory.file[i].fileHeader.filenameOffset), std::ios::beg);
+			std::cout << ifs.tellg() << std::endl;
 			std::getline(ifs, directory.file[i].filenameDir, '\0');
+			tie(filename, isInsideFolder) = utilites.decode(directory.file[i].filenameDir);
+
+			if (false == isInsideFolder )
+			{
+				directory.file[i].decrFilenames = folderName = filename;
+			}
+			else
+				directory.file[i].decrFilenames = folderName + filename;
+
+
+
+
+			std::cout << "extracting: " << directory.file[i].decrFilenames << std::endl;
 		}
 
 		std::cout << directory.file[0].filenameDir.size() << std::endl;
 
-		std::vector<unsigned char> hue = utilites.decode(directory.file[1000].filenameDir);
-
 		std::cout << "filenameDirOffset" << filenameDirOffset << std::endl;
-
-		for (int i = 0; i < hue.size(); i++)
-		{
-			std::cout << hue[i];
-		}
-
-		std::cout << "hue size: " << hue.size() << std::endl;
 
 		std::cout << "first filename offset " << filenameDirOffset + directory.file[0].fileHeader.filenameOffset << std::endl;
 		std::cout << directory.file.size() << std::endl;
